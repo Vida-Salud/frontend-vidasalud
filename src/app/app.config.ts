@@ -2,6 +2,7 @@ import { ApplicationConfig, provideZonelessChangeDetection, provideAppInitialize
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app.routes';
+import { environment } from '../environments/environment';
 
 import {
     IPublicClientApplication,
@@ -25,10 +26,10 @@ import {
 export function MSALInstanceFactory(): IPublicClientApplication {
     return new PublicClientApplication({
         auth: {
-            clientId: '76355338-78b7-4c7f-a65b-aaf724e3a844',
-            authority: 'https://login.microsoftonline.com/d6722070-486a-44b6-8527-e63e9ec35fba',
-            redirectUri: 'http://localhost:4200',
-            postLogoutRedirectUri: 'http://localhost:4200'
+            clientId: environment.msal.clientId,
+            authority: `https://login.microsoftonline.com/${environment.msal.tenantId}`,
+            redirectUri: environment.msal.redirectUri,
+            postLogoutRedirectUri: environment.msal.postLogoutRedirectUri
         },
         cache: {
             cacheLocation: BrowserCacheLocation.LocalStorage
@@ -40,13 +41,14 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     return {
         interactionType: InteractionType.Redirect,
         authRequest: {
-            scopes: ['user.read']
+            scopes: [environment.apiScope]
         }
     };
 }
 
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     const protectedResourceMap = new Map<string, Array<string>>();
+    protectedResourceMap.set(`${environment.apiBaseUrl}/api`, [environment.apiScope]);
     protectedResourceMap.set('https://graph.microsoft.com/v1.0/me', ['user.read']);
 
     return {

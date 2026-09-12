@@ -1,41 +1,38 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
 import { AuthenticationResult, EventMessage, EventType } from '@azure/msal-browser';
 import { filter } from 'rxjs/internal/operators/filter';
+import { AuthService } from './auth/auth.service';
+import { environment } from '../environments/environment';
 
 @Component({
-imports: [RouterOutlet, RouterLink],
-selector: 'app-root',
-styleUrl: './app.css',
-templateUrl: './app.html',
+    imports: [RouterOutlet, RouterLink, RouterLinkActive],
+    selector: 'app-root',
+    styleUrl: './app.css',
+    templateUrl: './app.html',
 })
 export class App {
-    protected readonly title = signal('mi-app-angular-msal');
-
+    protected readonly title = signal('frontend-vidasalud');
     private msalService = inject(MsalService);
     private msalBroadcastService = inject(MsalBroadcastService);
-
-    isLoggedIn = false;
+    auth = inject(AuthService);
 
     ngOnInit(): void {
-        // Escuchar cuando finalice la inicialización (INITIALIZE_END) o el login
         this.msalBroadcastService.msalSubject$
-        .pipe(
-            filter((msg: EventMessage) => 
-                msg.eventType === EventType.INITIALIZE_END || 
-                msg.eventType === EventType.LOGIN_SUCCESS
-            )
-        )
-        .subscribe((result: EventMessage) => {
-            if (result.eventType === EventType.LOGIN_SUCCESS) {
-                const payload = result.payload as AuthenticationResult;
-                this.msalService.instance.setActiveAccount(payload.account);
-            }
-            this.checkLoginStatus();
-        });
+            .pipe(
+                filter((msg: EventMessage) =>
+                    msg.eventType === EventType.INITIALIZE_END ||
+                    msg.eventType === EventType.LOGIN_SUCCESS
+                ))
+            .subscribe((result: EventMessage) => {
+                if (result.eventType === EventType.LOGIN_SUCCESS) {
+                    const payload = result.payload as AuthenticationResult;
+                    this.msalService.instance.setActiveAccount(payload.account);
+                }
+                this.checkLoginStatus();
+            });
 
-        // Intento inicial protegido por try/catch por si ya está listo
         this.checkLoginStatus();
     }
 
@@ -45,15 +42,15 @@ export class App {
             if (!activeAccount && this.msalService.instance.getAllAccounts().length > 0) {
                 this.msalService.instance.setActiveAccount(this.msalService.instance.getAllAccounts()[0]);
             }
-        this.isLoggedIn = !!this.msalService.instance.getActiveAccount();
         } catch {
-            // Ignora la excepción si la consulta ocurre antes de que la inicialización concluya
-            this.isLoggedIn = false;
+            // La consulta puede ocurrir antes de que termine la inicialización
         }
     }
 
     login(): void {
-        this.msalService.loginRedirect();
+        this.msalService.loginRedirect({
+            scopes: [environment.apiScope]
+        });
     }
 
     logout(): void {

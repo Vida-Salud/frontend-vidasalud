@@ -1,28 +1,39 @@
-<header>
-    <h1>Mi Aplicación Angular</h1>
-    
-    <nav>
-        <a routerLink="/">Inicio</a> | 
-        <a routerLink="/profile">Mi Perfil</a>
-    </nav>
+<header style="padding: 12px 20px; border-bottom: 1px solid #ccc;">
+    <h1 style="margin: 0 0 8px 0;">VidaSalud</h1>
 
-    <div>
-        @if (!isLoggedIn) {
-            <button (click)="login()">Iniciar Sesión</button>
-        } @else {
-            <button (click)="logout()">Cerrar Sesión</button>
+    @if (auth.isLoggedIn) {
+    <nav style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+
+        @if (auth.hasRole('Admin', 'Operador', 'Cliente')) {
+        <a routerLink="/appointments" routerLinkActive="active">Atenciones</a>
         }
-    </div>
+        @if (auth.hasRole('Admin', 'Operador')) {
+        <a routerLink="/catalog" routerLinkActive="active">Catálogo</a>
+        }
+        @if (auth.hasRole('Admin')) {
+        <a routerLink="/reports" routerLinkActive="active">Reportería</a>
+        }
+        @if (auth.hasRole('Admin', 'Auditor')) {
+        <a routerLink="/audit" routerLinkActive="active">Auditoría</a>
+        }
+
+        <span style="margin-left: auto;">
+            {{ auth.displayName }} ({{ auth.roles.join(', ') || 'sin rol' }})
+        </span>
+        <button (click)="logout()">Cerrar Sesión</button>
+    </nav>
+    } @else {
+    <button (click)="login()">Iniciar Sesión</button>
+    }
 </header>
 
 <main>
-    @if (!isLoggedIn) {
-        <section>
-            <h2>Bienvenido</h2>
-            <p>Por favor inicia sesión para acceder a las secciones protegidas.</p>
-        </section>
+    @if (!auth.isLoggedIn) {
+    <section style="padding: 20px;">
+        <h2>Bienvenido a VidaSalud</h2>
+        <p>Inicia sesión con tu cuenta corporativa para acceder al sistema.</p>
+    </section>
     }
-
-    <!-- Aquí se renderizan las rutas secundarias como /profile -->
     <router-outlet></router-outlet>
 </main>
