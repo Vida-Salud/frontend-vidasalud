@@ -4,9 +4,12 @@ import { AuthService } from './auth.service';
 import type { AppRole } from './auth.service';
 
 export function roleGuard(...allowed: AppRole[]): CanActivateFn {
-    return () => {
+    return async () => {
         const auth = inject(AuthService);
         const router = inject(Router);
+
+        // Los roles vienen del Access Token de la API, que se obtiene de forma asíncrona.
+        await auth.ensureRoles();
 
         if (auth.hasRole(...allowed)) {
             return true;
