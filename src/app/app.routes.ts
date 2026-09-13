@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { MsalGuard } from '@azure/msal-angular';
 import { roleGuard } from './auth/role-guard';
+import { authGuard } from './auth/auth-guard';
 
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Appointments } from './pages/appointments/appointments';
@@ -11,7 +12,12 @@ import { Forbidden } from './forbidden/forbidden';
 import { TokenInfo } from './token-info/token-info';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    {
+        path: '',
+        pathMatch: 'full',
+        component: Dashboard,
+        canActivate: [authGuard]
+    },
     {
         path: 'dashboard',
         component: Dashboard,
@@ -43,5 +49,5 @@ export const routes: Routes = [
         component: TokenInfo,
         canActivate: [MsalGuard]
     },
-    { path: '**', redirectTo: 'dashboard' }
+    { path: '**', redirectTo: '' }
 ];

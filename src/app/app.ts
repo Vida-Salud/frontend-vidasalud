@@ -47,6 +47,18 @@ export class App {
         }
     }
 
+    get initials(): string {
+        const name = this.auth.displayName || this.auth.username;
+        return (
+            name
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map(part => part[0]?.toUpperCase())
+                .join('') || '?'
+        );
+    }
+
     login(): void {
         this.msalService.loginRedirect({
             scopes: [environment.apiScope]
