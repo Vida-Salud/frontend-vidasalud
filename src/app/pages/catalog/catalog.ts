@@ -32,13 +32,14 @@ type Tab = 'servicios' | 'boxes' | 'cupos';
       @if (tab() === 'servicios') {
         <div style="display: flex; flex-direction: column; gap: 16px;">
           <div style="display: flex; justify-content: flex-end;">
-            <button class="btn btn-primary" (click)="mostrarFormServicio.set(!mostrarFormServicio())">
+            <button class="btn btn-primary" (click)="mostrarFormServicio() ? cerrarFormServicio() : abrirFormNuevoServicio()">
               {{ mostrarFormServicio() ? 'Cancelar' : 'Nuevo servicio' }}
             </button>
           </div>
 
           @if (mostrarFormServicio()) {
-            <form class="card" style="display: flex; flex-direction: column; gap: 12px;" (submit)="crearServicio(); $event.preventDefault()">
+            <form class="card" style="display: flex; flex-direction: column; gap: 12px;" (submit)="guardarServicio(); $event.preventDefault()">
+              <h3 style="font-size: 15px;">{{ servicioEnEdicion() ? 'Editar servicio' : 'Nuevo servicio' }}</h3>
               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
                 <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--color-text-muted);">
                   Nombre
@@ -63,7 +64,7 @@ type Tab = 'servicios' | 'boxes' | 'cupos';
 
               <div>
                 <button type="submit" class="btn btn-primary" [disabled]="guardandoServicio()">
-                  {{ guardandoServicio() ? 'Guardando...' : 'Crear servicio' }}
+                  {{ guardandoServicio() ? 'Guardando...' : (servicioEnEdicion() ? 'Guardar cambios' : 'Crear servicio') }}
                 </button>
               </div>
             </form>
@@ -90,6 +91,7 @@ type Tab = 'servicios' | 'boxes' | 'cupos';
                     <th style="padding: 12px 16px;">Descripción</th>
                     <th style="padding: 12px 16px;">Precio</th>
                     <th style="padding: 12px 16px;">Estado</th>
+                    <th style="padding: 12px 16px;">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -102,6 +104,12 @@ type Tab = 'servicios' | 'boxes' | 'cupos';
                         <span class="badge" [class.badge-muted]="!servicio.activo">
                           {{ servicio.activo ? 'Activo' : 'Inactivo' }}
                         </span>
+                      </td>
+                      <td style="padding: 12px 16px;">
+                        <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 13px;"
+                                (click)="abrirFormEditarServicio(servicio)">
+                          Editar
+                        </button>
                       </td>
                     </tr>
                   }
@@ -274,6 +282,7 @@ export class Catalog {
     mostrarFormServicio = signal(false);
     guardandoServicio = signal(false);
     formErrorServicio = signal<string | null>(null);
+    servicioEnEdicion = signal<Servicio | null>(null);
     nombreServicio = '';
     descripcionServicio = '';
     precioServicio: number | null = null;
@@ -318,7 +327,30 @@ export class Catalog {
         });
     }
 
-    crearServicio(): void {
+    abrirFormNuevoServicio(): void {
+        this.servicioEnEdicion.set(null);
+        this.nombreServicio = '';
+        this.descripcionServicio = '';
+        this.precioServicio = null;
+        this.formErrorServicio.set(null);
+        this.mostrarFormServicio.set(true);
+    }
+
+    abrirFormEditarServicio(servicio: Servicio): void {
+        this.servicioEnEdicion.set(servicio);
+        this.nombreServicio = servicio.nombre;
+        this.descripcionServicio = servicio.descripcion ?? '';
+        this.precioServicio = servicio.precio;
+        this.formErrorServicio.set(null);
+        this.mostrarFormServicio.set(true);
+    }
+
+    cerrarFormServicio(): void {
+        this.mostrarFormServicio.set(false);
+        this.servicioEnEdicion.set(null);
+    }
+
+    guardarServicio(): void {
         if (!this.nombreServicio.trim() || this.precioServicio == null || this.precioServicio <= 0) {
             this.formErrorServicio.set('Completa nombre y precio (mayor a 0).');
             return;
@@ -326,17 +358,20 @@ export class Catalog {
 
         this.guardandoServicio.set(true);
         this.formErrorServicio.set(null);
-        this.service.crearServicio({
+        const request = {
             nombre: this.nombreServicio.trim(),
             descripcion: this.descripcionServicio.trim() || null,
             precio: this.precioServicio
-        }).subscribe({
+        };
+        const enEdicion = this.servicioEnEdicion();
+        const peticion = enEdicion
+            ? this.service.actualizarServicio(enEdicion.id, request)
+            : this.service.crearServicio(request);
+
+        peticion.subscribe({
             next: () => {
                 this.guardandoServicio.set(false);
-                this.mostrarFormServicio.set(false);
-                this.nombreServicio = '';
-                this.descripcionServicio = '';
-                this.precioServicio = null;
+                this.cerrarFormServicio();
                 this.cargarServicios();
             },
             error: err => {
