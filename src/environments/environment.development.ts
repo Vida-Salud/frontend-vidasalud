@@ -7,5 +7,6 @@ export const environment = {
         postLogoutRedirectUri: 'http://localhost:4200'
     },
     apiScope: 'api://c0093a05-7296-42f7-b6e7-d263c3db2fb0/access_as_user',
-    apiBaseUrl: 'http://localhost:8090'
+    apiBaseUrl: 'http://localhost:8090',
+    apiVersion: 'v1'
 };

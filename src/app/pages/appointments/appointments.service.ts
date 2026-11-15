@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../../core/api-url';
 
 export type EstadoAtencion =
     | 'SOLICITADA'
@@ -28,11 +28,11 @@ export interface CrearAtencionRequest {
     fechaHora: string;
 }
 
-/** Habla con el BFF (/api/appointments), no directo con ms-vidasalud-appointments. */
+/** Habla con el BFF (/api/v1/appointments), no directo con ms-vidasalud-appointments. */
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
     private http = inject(HttpClient);
-    private baseUrl = `${environment.apiBaseUrl}/api/appointments`;
+    private baseUrl = `${inject(API_URL)}/appointments`;
 
     listar(): Observable<Atencion[]> {
         return this.http.get<Atencion[]>(this.baseUrl);

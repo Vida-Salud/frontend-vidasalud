@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { API_URL } from '../../core/api-url';
 
 export interface Servicio {
     id: number;
@@ -48,11 +48,11 @@ export interface CupoDisponible {
     cuposDisponibles: number;
 }
 
-/** Habla con el BFF (/api/catalog), no directo con ms-vidasalud-catalog. */
+/** Habla con el BFF (/api/v1/catalog), no directo con ms-vidasalud-catalog. */
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
     private http = inject(HttpClient);
-    private baseUrl = `${environment.apiBaseUrl}/api/catalog`;
+    private baseUrl = `${inject(API_URL)}/catalog`;
 
     // === Servicios ===
 
@@ -84,13 +84,11 @@ export class CatalogService {
     // === Cupos ===
 
     listarCupos(fecha?: string): Observable<CupoDisponible[]> {
-        const url = fecha
-            ? `${this.baseUrl}/cupos?fecha=${fecha}`
-            : `${this.baseUrl}/cupos`;
-        return this.http.get<CupoDisponible[]>(url);
+        const params: Record<string, string> = fecha ? { date: fecha } : {};
+        return this.http.get<CupoDisponible[]>(`${this.baseUrl}/slots`, { params });
     }
 
     actualizarCupo(id: number, cuposDisponibles: number): Observable<CupoDisponible> {
-        return this.http.put<CupoDisponible>(`${this.baseUrl}/cupos/${id}`, { cuposDisponibles });
+        return this.http.put<CupoDisponible>(`${this.baseUrl}/slots/${id}`, { cuposDisponibles });
     }
 }
