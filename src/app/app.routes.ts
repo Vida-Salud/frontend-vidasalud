@@ -10,6 +10,7 @@ import { Reports } from './pages/reports/reports';
 import { Audit } from './pages/audit/audit';
 import { Forbidden } from './forbidden/forbidden';
 import { TokenInfo } from './token-info/token-info';
+import { environment } from '../environments/environment';
 
 export const routes: Routes = [
     {
@@ -44,10 +45,6 @@ export const routes: Routes = [
         canActivate: [MsalGuard, roleGuard('Admin', 'Auditor')]
     },
     { path: 'forbidden', component: Forbidden },
-    {
-        path: 'token',
-        component: TokenInfo,
-        canActivate: [MsalGuard]
-    },
+    ...(environment.production ? [] : [{ path: 'token', component: TokenInfo, canActivate: [MsalGuard] }]),
     { path: '**', redirectTo: '' }
 ];
