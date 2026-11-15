@@ -39,8 +39,6 @@ export class TokenInfo implements OnInit {
             next: (res) => {
                 const payload = JSON.parse(atob(res.accessToken.split('.')[1]));
                 this.claims.set(payload);
-                console.log('Access token completo:', res.accessToken);
-                console.log('Claims:', payload);
             },
             error: (err) => this.error.set(err?.message ?? 'Error al obtener el token')
         });
