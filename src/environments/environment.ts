@@ -7,5 +7,6 @@ export const environment = {
         postLogoutRedirectUri: '__POST_LOGOUT_REDIRECT_URI__'
     },
     apiScope: 'api://c0093a05-7296-42f7-b6e7-d263c3db2fb0/access_as_user',
-    apiBaseUrl: '__API_BASE_URL__'
+    apiBaseUrl: '__API_BASE_URL__',
+    apiVersion: 'v1'
 };

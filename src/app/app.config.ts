@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { API_URL } from './core/api-url';
 
 import {
     IPublicClientApplication,
@@ -60,6 +61,7 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZonelessChangeDetection(),
+        { provide: API_URL, useValue: `${environment.apiBaseUrl}/api/${environment.apiVersion}` },
         provideRouter(routes),
         provideHttpClient(
             withInterceptorsFromDi()
