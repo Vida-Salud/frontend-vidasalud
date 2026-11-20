@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
+    imports: [RouterLink],
     template: `
     <div style="display: flex; flex-direction: column; gap: 20px;">
       <div>
@@ -24,6 +26,7 @@ import { AuthService } from '../../auth/auth.service';
         <div class="card">
           <h3 style="font-size: 15px; margin-bottom: 6px;">Vista de administrador</h3>
           <p style="color: var(--color-text-muted); font-size: 14px;">KPIs globales de la red.</p>
+          <a routerLink="/reports" class="btn btn-secondary" style="margin-top: 10px; display: inline-block;">Ver reportería</a>
         </div>
       }
       @if (auth.hasRole('Operador')) {
